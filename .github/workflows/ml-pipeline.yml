@@ -19,8 +19,16 @@ jobs:
         python -m pip install --upgrade pip
         # Install CPU-only version of PyTorch
         pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-        pip install pytest
+        pip install pytest tqdm
         pip install numpy
+        
+    - name: Train Model
+      run: |
+        echo "Training MNIST model..."
+        PYTHONPATH=$PYTHONPATH:. python -c "
+        from src.train import train_model
+        model, model_path = train_model(save_suffix='github')
+        print(f'\nModel saved as: {model_path}')" 2>&1 | tee train_output.txt
         
     - name: Run tests
       run: |
@@ -31,7 +39,10 @@ jobs:
         echo "## Model Performance Summary" >> $GITHUB_STEP_SUMMARY
         echo "---" >> $GITHUB_STEP_SUMMARY
         echo "### Key Metrics:" >> $GITHUB_STEP_SUMMARY
-        echo "```" >> $GITHUB_STEP_SUMMARY
-        grep -A1 "Total number of model parameters:" pytest_output.txt || true
-        grep -A1 "Model accuracy after 1 epoch:" pytest_output.txt || true
-        echo "```" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        echo "Training Output:" >> $GITHUB_STEP_SUMMARY
+        tail -n 5 train_output.txt >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Test Results:" >> $GITHUB_STEP_SUMMARY
+        cat pytest_output.txt | grep -E "Total number of model parameters:|Model accuracy after 1 epoch:" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

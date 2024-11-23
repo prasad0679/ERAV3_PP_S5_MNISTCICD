@@ -6,6 +6,7 @@ from datetime import datetime
 import platform
 from src.model import MNISTNet
 import os
+from tqdm import tqdm
 
 def train_model(device='cpu', save_suffix='local'):
     # Data preparation
@@ -23,7 +24,8 @@ def train_model(device='cpu', save_suffix='local'):
     
     # Training
     model.train()
-    for batch_idx, (data, target) in enumerate(train_loader):
+    pbar = tqdm(train_loader, desc='Training')
+    for batch_idx, (data, target) in enumerate(pbar):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)
@@ -31,15 +33,14 @@ def train_model(device='cpu', save_suffix='local'):
         loss.backward()
         optimizer.step()
         
-        if batch_idx % 100 == 0:
-            print(f'Batch {batch_idx}/{len(train_loader)}, Loss: {loss.item():.4f}')
+        pbar.set_postfix({'loss': f'{loss.item():.4f}'})
     
     # Save model with timestamp and system info
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     system_info = platform.system().lower()
     model_path = f'model_{timestamp}_{system_info}_{save_suffix}.pth'
     torch.save(model.state_dict(), model_path)
-    return model
+    return model, model_path
 
 if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

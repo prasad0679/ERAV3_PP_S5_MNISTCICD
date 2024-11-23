@@ -21,10 +21,17 @@ def test_input_shape():
     assert output.shape == (1, 10), "Model output shape is incorrect"
 
 def test_model_accuracy():
+    # Use the model trained in the previous step
     model = MNISTNet()
-    # Train for a few batches
     device = torch.device('cpu')
-    model = train_model(device, save_suffix='test')
+    
+    # Find the most recent model file
+    model_files = [f for f in os.listdir('.') if f.endswith('github.pth')]
+    if model_files:
+        latest_model = max(model_files, key=os.path.getctime)
+        model.load_state_dict(torch.load(latest_model))
+    else:
+        model = train_model(device, save_suffix='test')[0]
     
     accuracy = evaluate_model(model, device)
     print(f"\nModel accuracy after 1 epoch: {accuracy:.2f}%")
