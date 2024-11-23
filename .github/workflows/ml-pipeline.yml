@@ -24,12 +24,14 @@ jobs:
         
     - name: Run tests
       run: |
-        PYTHONPATH=$PYTHONPATH:. pytest tests/ -v > pytest_output.txt
+        PYTHONPATH=$PYTHONPATH:. pytest tests/ -v 2>&1 | tee pytest_output.txt
       
     - name: Display Model Statistics
       run: |
         echo "## Model Performance Summary" >> $GITHUB_STEP_SUMMARY
         echo "---" >> $GITHUB_STEP_SUMMARY
         echo "### Key Metrics:" >> $GITHUB_STEP_SUMMARY
-        grep "Total number of model parameters:" pytest_output.txt >> $GITHUB_STEP_SUMMARY
-        grep "Model accuracy after 1 epoch:" pytest_output.txt >> $GITHUB_STEP_SUMMARY
+        echo "```" >> $GITHUB_STEP_SUMMARY
+        grep -A1 "Total number of model parameters:" pytest_output.txt || true
+        grep -A1 "Model accuracy after 1 epoch:" pytest_output.txt || true
+        echo "```" >> $GITHUB_STEP_SUMMARY
