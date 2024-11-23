@@ -29,12 +29,5 @@ jobs:
     - name: Display Model Statistics
       run: |
         echo "=== Model Performance Report ===" >> $GITHUB_STEP_SUMMARY
-        python -c "
-import json
-with open('test_report.json', 'r') as f:
-    for line in f:
-        data = json.loads(line)
-        if 'call' in data and 'stdout' in data:
-            if 'parameters' in data['stdout'] or 'accuracy' in data['stdout']:
-                print(data['stdout'])
-        " >> $GITHUB_STEP_SUMMARY
+        echo "Test Results:" >> $GITHUB_STEP_SUMMARY
+        cat test_report.json | grep -E "parameters|accuracy" >> $GITHUB_STEP_SUMMARY
