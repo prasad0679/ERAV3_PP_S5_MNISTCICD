@@ -5,6 +5,7 @@ from torchvision import datasets, transforms
 from datetime import datetime
 import platform
 from src.model import MNISTNet
+from src.utils import evaluate_model
 import os
 from tqdm import tqdm
 
@@ -16,11 +17,15 @@ def train_model(device='cpu', save_suffix='local'):
     ])
     
     train_dataset = datasets.MNIST('./data', train=True, download=True, transform=transform)
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=32, shuffle=True)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=512, shuffle=True)
     
     model = MNISTNet().to(device)
+    # Print total parameters
+    total_params = model.count_parameters()
+    print(f"\nTotal number of model parameters: {total_params:,}")
+    
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.002)
+    optimizer = optim.Adam(model.parameters(), lr=0.003)
     
     # Training
     model.train()
@@ -37,9 +42,15 @@ def train_model(device='cpu', save_suffix='local'):
         total_loss += loss.item()
         pbar.set_postfix({'loss': f'{loss.item():.4f}'})
     
+    # Calculate accuracy
+    accuracy = evaluate_model(model, device)
+    
     avg_loss = total_loss / len(train_loader)
     print(f"\n=== Training Summary ===")
+    print(f"Total Parameters: {total_params:,}")
     print(f"Average Loss: {avg_loss:.4f}")
+    print(f"Model Accuracy: {accuracy:.2f}%")
+    print(f"Batch Size: 512")
     
     # Save model with timestamp and system info
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
