@@ -19,15 +19,17 @@ jobs:
         python -m pip install --upgrade pip
         # Install CPU-only version of PyTorch
         pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-        pip install pytest pytest-reportlog
+        pip install pytest
         pip install numpy
         
     - name: Run tests
       run: |
-        PYTHONPATH=$PYTHONPATH:. pytest tests/ --report-log=test_report.json -v
+        PYTHONPATH=$PYTHONPATH:. pytest tests/ -v > pytest_output.txt
       
     - name: Display Model Statistics
       run: |
-        echo "=== Model Performance Report ===" >> $GITHUB_STEP_SUMMARY
-        echo "Test Results:" >> $GITHUB_STEP_SUMMARY
-        cat test_report.json | grep -E "parameters|accuracy" >> $GITHUB_STEP_SUMMARY
+        echo "## Model Performance Summary" >> $GITHUB_STEP_SUMMARY
+        echo "---" >> $GITHUB_STEP_SUMMARY
+        echo "### Key Metrics:" >> $GITHUB_STEP_SUMMARY
+        grep "Total number of model parameters:" pytest_output.txt >> $GITHUB_STEP_SUMMARY
+        grep "Model accuracy after 1 epoch:" pytest_output.txt >> $GITHUB_STEP_SUMMARY
