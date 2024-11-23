@@ -10,7 +10,9 @@ from src.train import train_model
 
 def test_model_parameters():
     model = MNISTNet()
-    assert model.count_parameters() < 25000, "Model has too many parameters"
+    param_count = model.count_parameters()
+    print(f"\nTotal number of model parameters: {param_count:,}")
+    assert param_count < 25000, "Model has too many parameters"
 
 def test_input_shape():
     model = MNISTNet()
@@ -25,4 +27,5 @@ def test_model_accuracy():
     model = train_model(device, save_suffix='test')
     
     accuracy = evaluate_model(model, device)
+    print(f"\nModel accuracy after 1 epoch: {accuracy:.2f}%")
     assert accuracy > 95.0, f"Model accuracy {accuracy:.2f}% is below threshold" 
