@@ -36,13 +36,21 @@ jobs:
       
     - name: Display Model Statistics
       run: |
-        echo "## Model Performance Summary" >> $GITHUB_STEP_SUMMARY
-        echo "---" >> $GITHUB_STEP_SUMMARY
-        echo "### Key Metrics:" >> $GITHUB_STEP_SUMMARY
-        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-        echo "Training Output:" >> $GITHUB_STEP_SUMMARY
-        tail -n 5 train_output.txt >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "Test Results:" >> $GITHUB_STEP_SUMMARY
-        cat pytest_output.txt | grep -E "Total number of model parameters:|Model accuracy after 1 epoch:" >> $GITHUB_STEP_SUMMARY
-        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        {
+          echo "## Model Performance Summary"
+          echo "---"
+          echo "### Training Results:"
+          echo '```'
+          if [ -f train_output.txt ]; then
+            grep "=== Training Summary ===" -A 2 train_output.txt || echo "No training summary found"
+            grep "Model saved as:" train_output.txt || echo "No model path found"
+          fi
+          echo
+          echo "### Model Metrics:"
+          echo '```'
+          if [ -f pytest_output.txt ]; then
+            grep "Total number of model parameters:" pytest_output.txt || echo "No parameter count found"
+            grep "Model accuracy after 1 epoch:" pytest_output.txt || echo "No accuracy found"
+          fi
+          echo '```'
+        } >> $GITHUB_STEP_SUMMARY

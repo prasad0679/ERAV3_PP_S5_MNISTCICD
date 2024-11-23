@@ -24,6 +24,7 @@ def train_model(device='cpu', save_suffix='local'):
     
     # Training
     model.train()
+    total_loss = 0
     pbar = tqdm(train_loader, desc='Training')
     for batch_idx, (data, target) in enumerate(pbar):
         data, target = data.to(device), target.to(device)
@@ -33,7 +34,12 @@ def train_model(device='cpu', save_suffix='local'):
         loss.backward()
         optimizer.step()
         
+        total_loss += loss.item()
         pbar.set_postfix({'loss': f'{loss.item():.4f}'})
+    
+    avg_loss = total_loss / len(train_loader)
+    print(f"\n=== Training Summary ===")
+    print(f"Average Loss: {avg_loss:.4f}")
     
     # Save model with timestamp and system info
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
