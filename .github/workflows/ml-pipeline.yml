@@ -19,8 +19,12 @@ jobs:
         python -m pip install --upgrade pip
         # Install CPU-only version of PyTorch
         pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-        pip install pytest tqdm torchsummary
+        pip install pytest tqdm torchsummary matplotlib
         pip install numpy
+        
+    - name: Set up matplotlib backend
+      run: |
+        echo "backend: Agg" > matplotlibrc
         
     - name: Train Model
       run: |
