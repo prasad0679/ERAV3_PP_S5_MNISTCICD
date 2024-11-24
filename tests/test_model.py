@@ -29,7 +29,8 @@ def test_model_accuracy():
     model_files = [f for f in os.listdir('.') if f.endswith('github.pth')]
     if model_files:
         latest_model = max(model_files, key=os.path.getctime)
-        model.load_state_dict(torch.load(latest_model))
+        # Use weights_only=True to avoid the warning
+        model.load_state_dict(torch.load(latest_model, weights_only=True))
     else:
         model = train_model(device, save_suffix='test')[0]
     

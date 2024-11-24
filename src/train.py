@@ -8,6 +8,7 @@ from src.model import MNISTNet
 from src.utils import evaluate_model
 import os
 from tqdm import tqdm
+from torchsummary import summary
 
 def train_model(device='cpu', save_suffix='local'):
     # Data preparation
@@ -20,6 +21,11 @@ def train_model(device='cpu', save_suffix='local'):
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=512, shuffle=True)
     
     model = MNISTNet().to(device)
+    
+    # Print model summary
+    print("\n=== Model Architecture ===")
+    summary(model, input_size=(1, 28, 28))
+    
     # Print total parameters
     total_params = model.count_parameters()
     print(f"\nTotal number of model parameters: {total_params:,}")

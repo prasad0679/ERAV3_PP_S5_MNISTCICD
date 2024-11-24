@@ -19,7 +19,7 @@ jobs:
         python -m pip install --upgrade pip
         # Install CPU-only version of PyTorch
         pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-        pip install pytest tqdm
+        pip install pytest tqdm torchsummary
         pip install numpy
         
     - name: Train Model
@@ -42,15 +42,20 @@ jobs:
           echo "### Training Results:"
           echo '```'
           if [ -f train_output.txt ]; then
-            grep "=== Training Summary ===" -A 2 train_output.txt || echo "No training summary found"
+            echo "Model Architecture:"
+            grep -A 20 "=== Model Architecture ===" train_output.txt || echo "No architecture found"
+            echo
+            echo "Training Summary:"
+            grep -A 4 "=== Training Summary ===" train_output.txt || echo "No training summary found"
+            echo
             grep "Model saved as:" train_output.txt || echo "No model path found"
           fi
           echo
-          echo "### Model Metrics:"
+          echo "### Test Results:"
           echo '```'
           if [ -f pytest_output.txt ]; then
-            grep "Total number of model parameters:" pytest_output.txt || echo "No parameter count found"
-            grep "Model accuracy after 1 epoch:" pytest_output.txt || echo "No accuracy found"
+            echo "Parameters and Accuracy:"
+            grep -E "Total number of model parameters:|Model accuracy after 1 epoch:" pytest_output.txt || echo "No metrics found"
           fi
           echo '```'
         } >> $GITHUB_STEP_SUMMARY
