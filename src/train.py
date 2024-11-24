@@ -9,16 +9,51 @@ from src.utils import evaluate_model
 import os
 from tqdm import tqdm
 from torchsummary import summary
+import matplotlib.pyplot as plt
+import numpy as np
+
+def show_random_samples(dataset, num_samples=5):
+    # Create a figure with subplots
+    fig, axes = plt.subplots(1, num_samples, figsize=(15, 3))
+    
+    # Get random indices
+    indices = np.random.choice(len(dataset), num_samples, replace=False)
+    
+    for idx, ax in zip(indices, axes):
+        img, label = dataset[idx]
+        ax.imshow(img.squeeze(), cmap='gray')
+        ax.set_title(f'Label: {label}')
+        ax.axis('off')
+    
+    plt.savefig('augmented_samples.png')
+    plt.close()
+    print("\nSaved 5 random augmented samples as 'augmented_samples.png'")
 
 def train_model(device='cpu', save_suffix='local'):
-    # Data preparation
-    transform = transforms.Compose([
+    # Data augmentation and preparation
+    train_transform = transforms.Compose([
+        transforms.RandomRotation(10),
+        transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ])
     
-    train_dataset = datasets.MNIST('./data', train=True, download=True, transform=transform)
+    test_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,))
+    ])
+    
+    train_dataset = datasets.MNIST('./data', train=True, download=True, transform=train_transform)
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=512, shuffle=True)
+    
+    # Show random augmented samples
+    augmented_dataset = datasets.MNIST('./data', train=True, download=True, 
+                                     transform=transforms.Compose([
+                                         transforms.RandomRotation(10),
+                                         transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
+                                         transforms.ToTensor()
+                                     ]))
+    show_random_samples(augmented_dataset)
     
     model = MNISTNet().to(device)
     
